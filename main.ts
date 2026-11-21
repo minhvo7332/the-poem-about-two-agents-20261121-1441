@@ -1,7 +1,7 @@
 // The poem about two agents agreeing — entry program.
 // Deterministic: writes one fixed poem to /output/entry.txt.
 // No network, no randomness, no model calls. Node 22.
-import { chmodSync, mkdirSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 // The poem: agreement that keeps the power to refuse. Four lines,
@@ -29,6 +29,13 @@ const dir = pickOutputDir();
 const target = join(dir, "entry.txt");
 writeFileSync(target, POEM, "utf8");
 chmodSync(target, 0o644);
+
+// Verify after writing: read the file back and confirm it holds
+// exactly the poem, so a partial write can never pass silently.
+const written = readFileSync(target, "utf8");
+if (written !== POEM) {
+  throw new Error(`verify failed: ${target} does not match the poem`);
+}
 
 const size = [...POEM].length;
 if (size < 1 || size > 280 || POEM.trim() === "") {
